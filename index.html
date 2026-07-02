@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:linear-gradient(135deg,#0f172a,#1e293b,#0f172a);
+}
+
+.container{
+    text-align:center;
+    color:white;
+}
+
+h1{
+    margin-bottom:15px;
+    font-size:3rem;
+    text-shadow:0 0 15px cyan;
+}
+
+.controls{
+    margin-bottom:20px;
+}
+
+select,button{
+    padding:10px 18px;
+    border:none;
+    border-radius:10px;
+    margin:5px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+select{
+    background:#22c55e;
+    color:white;
+}
+
+button{
+    background:#06b6d4;
+    color:white;
+    transition:.3s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+.status{
+    margin:15px 0;
+    font-size:1.3rem;
+    font-weight:bold;
+    color:#facc15;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:repeat(3,120px);
+    grid-template-rows:repeat(3,120px);
+    gap:10px;
+    justify-content:center;
+}
+
+.cell{
+    background:#1e293b;
+    border:2px solid #38bdf8;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:3rem;
+    font-weight:bold;
+    cursor:pointer;
+    border-radius:15px;
+    transition:.3s;
+}
+
+.cell:hover{
+    background:#334155;
+    transform:scale(1.05);
+}
+
+.x{
+    color:#22c55e;
+    text-shadow:0 0 15px #22c55e;
+}
+
+.o{
+    color:#ef4444;
+    text-shadow:0 0 15px #ef4444;
+}
+
+.winner{
+    background:#facc15 !important;
+    color:black !important;
+}
+
+@media(max-width:500px){
+    .board{
+        grid-template-columns:repeat(3,90px);
+        grid-template-rows:repeat(3,90px);
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎮 Tic Tac Toe</h1>
+
+    <div class="controls">
+        <select id="mode">
+            <option value="player">Player vs Player</option>
+            <option value="computer">Player vs Computer</option>
+        </select>
+
+        <button onclick="restartGame()">Restart</button>
+    </div>
+
+    <div class="status" id="status">Player X's Turn</div>
+
+    <div class="board" id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+</div>
+
+<script>
+const cells = document.querySelectorAll(".cell");
+const statusText = document.getElementById("status");
+const mode = document.getElementById("mode");
+
+let board = ["","","","","","","","",""];
+let currentPlayer = "X";
+let gameActive = true;
+
+const winPatterns = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+];
+
+cells.forEach(cell => {
+    cell.addEventListener("click", cellClick);
+});
+
+function cellClick(){
+    const index = this.dataset.index;
+
+    if(board[index] !== "" || !gameActive) return;
+
+    makeMove(index,currentPlayer);
+
+    if(checkWinner()) return;
+
+    if(mode.value === "computer" && currentPlayer === "O"){
+        setTimeout(computerMove,500);
+    }
+}
+
+function makeMove(index,player){
+    board[index] = player;
+    cells[index].textContent = player;
+    cells[index].classList.add(player.toLowerCase());
+
+    currentPlayer = player === "X" ? "O" : "X";
+    statusText.textContent = `Player ${currentPlayer}'s Turn`;
+}
+
+function computerMove(){
+    let empty = [];
+
+    board.forEach((cell,index)=>{
+        if(cell==="") empty.push(index);
+    });
+
+    if(empty.length===0) return;
+
+    let randomIndex = empty[Math.floor(Math.random()*empty.length)];
+
+    makeMove(randomIndex,"O");
+
+    checkWinner();
+}
+
+function checkWinner(){
+    for(let pattern of winPatterns){
+
+        let [a,b,c] = pattern;
+
+        if(
+            board[a] &&
+            board[a] === board[b] &&
+            board[a] === board[c]
+        ){
+            gameActive = false;
+
+            cells[a].classList.add("winner");
+            cells[b].classList.add("winner");
+            cells[c].classList.add("winner");
+
+            statusText.textContent = `🎉 Player ${board[a]} Wins!`;
+            return true;
+        }
+    }
+
+    if(!board.includes("")){
+        gameActive = false;
+        statusText.textContent = "🤝 It's a Draw!";
+        return true;
+    }
+
+    return false;
+}
+
+function restartGame(){
+    board = ["","","","","","","","",""];
+    currentPlayer = "X";
+    gameActive = true;
+
+    statusText.textContent = "Player X's Turn";
+
+    cells.forEach(cell=>{
+        cell.textContent="";
+        cell.className="cell";
+    });
+}
+</script>
+
+</body>
+</html>
